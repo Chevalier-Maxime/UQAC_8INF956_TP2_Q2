@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: TP2_Dico_En
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: tp2_dico_en.Activator
+Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.osgi.framework;version="1.3.0"
+Export-Package: tp2_dico_en,
+ tp2_dico_en.service

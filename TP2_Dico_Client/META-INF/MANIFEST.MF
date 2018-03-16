@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: TP2_Dico_Client
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: tp2_dico_client.Activator
+Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: org.osgi.framework;version="1.3.0",
+ tp2_dico_en.service,
+ javax.swing
+Import-Service: tp2_dico_en.service.DictionaryService
+Export-Package: tp2_dico_client
