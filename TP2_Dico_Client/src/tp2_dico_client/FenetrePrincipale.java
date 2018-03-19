@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
@@ -20,18 +22,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.osgi.framework.ServiceReference;
 
 import tp2_dico_en.service.DictionaryService;
 
-public class FenetrePrincipale extends JFrame implements ActionListener,Runnable{
+public class FenetrePrincipale extends JFrame implements ActionListener,Runnable, Observer{
 
 	private JTextField entry;
 	private JLabel rechercheLabel;
 	private JLabel result;
 	private JList listesMots;
+	private JList listeDico;
 	private DefaultListModel<String> lm;
+	private DefaultListModel<String> ld;
 	
 	private ArrayList m_refList;
 	private HashMap m_refToObjMap = new HashMap();
@@ -50,6 +56,10 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
 		listesMots = new JList<String>(lm);
 		listesMots.disable();
 		
+		ld = new DefaultListModel<String>();
+		listeDico = new JList<String>(ld);
+		this.update(null, null);
+		
 		//setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("TextFieldDemo");
         
@@ -63,6 +73,13 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
         c.fill = GridBagConstraints.HORIZONTAL;
         add(rechercheLabel,c);
         add(entry, c);
+        
+        JLabel labelDico = new JLabel("Choix Dictionnaire");
+        add(labelDico,c);
+        
+        JScrollPane listDicoScroller = new JScrollPane(listeDico);
+        listDicoScroller.setPreferredSize(new Dimension(250, 100));
+        add(listDicoScroller,c);
  
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1.0;
@@ -71,11 +88,14 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
         result.setFont(new Font("Serif", Font.PLAIN, 14));
         add(result, c);
         
-        JScrollPane listScroller = new JScrollPane(listesMots);
-        listScroller.setPreferredSize(new Dimension(250, 80));
+        add(new JLabel("Propositions "),c);
         
+        JScrollPane listScroller = new JScrollPane(listesMots);
+        listScroller.setPreferredSize(new Dimension(250, 100));
         add(listScroller, c);
-        setSize(400,200);
+        
+        
+        setSize(400,300);
         setVisible(true);
 	}
 
@@ -99,18 +119,21 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
         	return;
         }
         
+        String dicoToLookInto = (String) listeDico.getSelectedValue();
      // Check each available dictionary for the current word.
         for (int i = 0; i < m_refList.size(); i++)
         {
             DictionaryService dictionary =
                 (DictionaryService) m_refToObjMap.get(m_refList.get(i));
 
-            if (dictionary.checkWord(entry.getText()))
-            {
-            	result.setText("Correct");
-	            result.setForeground(Color.green);
-               return;
-            }
+            
+            if(dicoToLookInto.equals("All") || dicoToLookInto.equals(dictionary.getLanguage()))
+	            if (dictionary.checkWord(entry.getText()))
+	            {
+	            	result.setText("Correct");
+		            result.setForeground(Color.green);
+	               return;
+	            }
         }
         
         
@@ -133,12 +156,13 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
         {
             DictionaryService dictionary =
                 (DictionaryService) m_refToObjMap.get(m_refList.get(i));
-
-            List<String> fullWords = dictionary.completeWord(entry.getText());
-	        for (String string : fullWords) {
-				lm.addElement(string);
-			}
             
+            if(dicoToLookInto.equals("All") || dicoToLookInto.equals(dictionary.getLanguage())){
+            	List<String> fullWords = dictionary.completeWord(entry.getText());
+		        for (String string : fullWords) {
+					lm.addElement(string);
+				}
+            }
             
         }
 //        for(int i = 0; i < dico.length; i++){
@@ -153,6 +177,26 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
 	@Override
 	public void run() {
 		initiateComponnents();
+		
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		ld.clear();
+		ld.addElement("All");
+		listeDico.setSelectedIndex(0);
+		for (int i = 0; i < m_refList.size(); i++)
+        {
+            DictionaryService dictionary =
+                (DictionaryService) m_refToObjMap.get(m_refList.get(i));
+            
+            ld.addElement(dictionary.getLanguage());
+            
+        }
+		if(ld.size() == 1){
+			result.setText("NO DICTIONARY AVAILABLE");
+			result.setForeground(Color.RED);
+		}
 		
 	}
 

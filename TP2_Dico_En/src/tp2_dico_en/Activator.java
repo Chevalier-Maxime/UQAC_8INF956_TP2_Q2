@@ -48,7 +48,7 @@ public class Activator implements BundleActivator
         
         URL dico = context.getBundle().getResource("engmix.txt");
         context.registerService(
-            DictionaryService.class.getName(), new DictionaryImpl(dico), props);
+            DictionaryService.class.getName(), new DictionaryImpl(dico,"English"), props);
     }
 
     /**
@@ -69,9 +69,10 @@ public class Activator implements BundleActivator
     {
         // The set of words contained in the dictionary.
         List<String> m_dictionary = new ArrayList<String>();
-
+        String language;
         
-        public DictionaryImpl(URL dicoPath){
+        public DictionaryImpl(URL dicoPath, String language){
+        	this.language = language;
         	try {
     			BufferedReader br = new BufferedReader(new InputStreamReader(dicoPath.openConnection().getInputStream()));
     			while(br.ready()) {
@@ -82,6 +83,10 @@ public class Activator implements BundleActivator
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}
+        }
+        
+        public String getLanguage(){
+        	return this.language;
         }
         /**
          * Implements DictionaryService.checkWord(). Determines

@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
 import java.io.IOException;
 
 import org.osgi.framework.BundleActivator;
@@ -31,7 +32,7 @@ import tp2_dico_en.service.*;
  * stop checking words by entering an empty line, but to start
  * checking words again you must stop and then restart the bundle.
 **/
-public class Activator implements BundleActivator, ServiceListener
+public class Activator extends Observable implements BundleActivator, ServiceListener
 {
 	// Bundle's context.
     private BundleContext m_context = null;
@@ -87,6 +88,7 @@ public class Activator implements BundleActivator, ServiceListener
             }
             
             Runnable r = new FenetrePrincipale(m_refList, m_refToObjMap);
+            this.addObserver((FenetrePrincipale)r);
         	Thread t = new Thread(r);
         	t.start();
         }
@@ -199,6 +201,9 @@ public class Activator implements BundleActivator, ServiceListener
                     m_refList.add(event.getServiceReference());
                     // Map reference to service object for easy look up.
                     m_refToObjMap.put(event.getServiceReference(), service);
+                    
+                    setChanged();
+                    notifyObservers();
                 }
                 else if (service != null)
                 {
@@ -218,8 +223,12 @@ public class Activator implements BundleActivator, ServiceListener
                     // Remove service reference from map.
                     m_refToObjMap.remove(event.getServiceReference());
 
+                    setChanged();
+                    notifyObservers();
                 }
+                
             }
+            
         }
     }
 }

@@ -13,6 +13,12 @@ import java.util.List;
 **/
 public interface DictionaryService
 {
+	/**
+	 * 
+	 * @return the language of the dictionary
+	 */
+	public String getLanguage();
+	
     /**
      * Check for the existence of a word.
      * @param word the word to be checked.
@@ -21,6 +27,10 @@ public interface DictionaryService
     **/
     public boolean checkWord(String word);
     
-    
+    /**
+     * Check for the existence of words beginning with @param
+     * @param word The begining of words
+     * @return All words beginning with @param
+     */
     public List<String> completeWord(String word);
 }
