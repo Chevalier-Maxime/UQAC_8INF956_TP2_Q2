@@ -184,7 +184,6 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
 	public void update(Observable arg0, Object arg1) {
 		ld.clear();
 		ld.addElement("All");
-		listeDico.setSelectedIndex(0);
 		for (int i = 0; i < m_refList.size(); i++)
         {
             DictionaryService dictionary =
@@ -196,7 +195,11 @@ public class FenetrePrincipale extends JFrame implements ActionListener,Runnable
 		if(ld.size() == 1){
 			result.setText("NO DICTIONARY AVAILABLE");
 			result.setForeground(Color.RED);
+		}else{
+			result.setText("");
 		}
+		
+		listeDico.setSelectedIndex(0);
 		
 	}
 

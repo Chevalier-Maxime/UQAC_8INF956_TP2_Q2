@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Observable;
 import java.io.IOException;
 
 import org.osgi.framework.BundleActivator;
@@ -31,7 +32,7 @@ import tp2_dico_en.service.*;
  * stop checking words by entering an empty line, but to start
  * checking words again you must stop and then restart the bundle.
 **/
-public class Activator implements BundleActivator, ServiceListener
+public class Activator extends Observable implements BundleActivator, ServiceListener
 {
 	// Bundle's context.
     private BundleContext m_context = null;
@@ -86,60 +87,79 @@ public class Activator implements BundleActivator, ServiceListener
                 }
             }
             
-            try
-            {
-                System.out.println("Enter a blank line to exit.");
-                BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-                String word = "";
-
-                // Loop endlessly.
-                while (true)
-                {
-                	while(m_refList.size() == 0){
-                		System.out.println("No dictionnary detected, retry ? (y/n)");
-                		word = in.readLine();
-                		if(!word.equals("y"))
-                			return;
-                	}
-                    // Ask the user to enter a word.
-                    System.out.print("Enter word: ");
-                    word = in.readLine();
-
-                    // If the user entered a blank line, then
-                    // exit the loop.
-                    if (word.length() == 0)
-                    {
-                        break;
-                    }
-                    
-                    for (int i = 0; i < m_refList.size(); i++)
-                    {
-                        DictionaryService dictionary =
-                            (DictionaryService) m_refToObjMap.get(m_refList.get(i));
-                        
-                        if (dictionary.checkWord(word))
-                        {
-                            System.out.println("Correct.");
-                        }
-                        else
-                        {
-                            System.out.println("Incorrect.");
-                            List<String> wordsWhoBeginWith = dictionary.completeWord(word);
-                            if(wordsWhoBeginWith.size() !=0){
-                            	System.out.println("Words who begin with "+word+" :");
-                            	for (String string : wordsWhoBeginWith) {
-    								System.out.println(string);
-    							}
-                            }
-                            
-                        }
-                    }
-                    // Unget the dictionary service.
-                    context.ungetService(refs[0]);
-                }
-            } catch (IOException ex) { }
+            Runnable r = new FenetrePrincipale(m_refList, m_refToObjMap);
+            this.addObserver((FenetrePrincipale)r);
+        	Thread t = new Thread(r);
+        	t.start();
         }
-     
+    	
+    	
+        // Query for all service references matching any language.
+//        ServiceReference[] refs = context.getServiceReferences(
+//            DictionaryService.class.getName(), "(Language=*)");
+//
+//        if (refs != null)
+//        {
+//        	DictionaryService dictionary =
+//                    (DictionaryService) context.getService(refs[0]);
+        	
+//        	Runnable r = new FenetrePrincipale(m_refList,m_refToObjMap);
+//        	Thread t = new Thread(r);
+//        	t.start();
+        	
+        	// Unget the dictionary service.
+            //context.ungetService(refs[0]);
+            
+//            try
+//            {
+//                System.out.println("Enter a blank line to exit.");
+//                BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+//                String word = "";
+//
+//                // Loop endlessly.
+//                while (true)
+//                {
+//                    // Ask the user to enter a word.
+//                    System.out.print("Enter word: ");
+//                    word = in.readLine();
+//
+//                    // If the user entered a blank line, then
+//                    // exit the loop.
+//                    if (word.length() == 0)
+//                    {
+//                        break;
+//                    }
+//
+//                    // First, get a dictionary service and then check
+//                    // if the word is correct.
+//                    DictionaryService dictionary =
+//                        (DictionaryService) context.getService(refs[0]);
+//                    if (dictionary.checkWord(word))
+//                    {
+//                        System.out.println("Correct.");
+//                    }
+//                    else
+//                    {
+//                        System.out.println("Incorrect.");
+//                        List<String> wordsWhoBeginWith = dictionary.completeWord(word);
+//                        if(wordsWhoBeginWith.size() !=0){
+//                        	System.out.println("Words who begin with "+word+" :");
+//                        	for (String string : wordsWhoBeginWith) {
+//								System.out.println(string);
+//							}
+//                        }
+//                        
+//                    }
+//
+//                    // Unget the dictionary service.
+//                    context.ungetService(refs[0]);
+//                }
+//            } catch (IOException ex) { }
+//        }
+//        else
+//        {
+//            System.out.println("Couldn't find any dictionary service...");
+//        }
     }
 
     /**
@@ -182,6 +202,8 @@ public class Activator implements BundleActivator, ServiceListener
                     // Map reference to service object for easy look up.
                     m_refToObjMap.put(event.getServiceReference(), service);
                     
+                    setChanged();
+                    notifyObservers();
                 }
                 else if (service != null)
                 {
@@ -201,6 +223,8 @@ public class Activator implements BundleActivator, ServiceListener
                     // Remove service reference from map.
                     m_refToObjMap.remove(event.getServiceReference());
 
+                    setChanged();
+                    notifyObservers();
                 }
                 
             }
